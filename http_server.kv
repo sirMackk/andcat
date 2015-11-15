@@ -1,0 +1,14 @@
+#:kivy 1.9.0
+
+<HTTPServer@GridLayout>:
+    cols: 1
+    rows: 4
+    AndCatLabel:
+        text: 'HTTP Server'
+    AndCatLabel:
+        text: 'Filechooser placeholder'
+    AndCatBtn:
+        text: 'Start server'
+    AndCatBtn:
+        text: 'Main'
+        on_press: root.parent.manager.current = 'main'

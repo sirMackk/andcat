@@ -1,0 +1,20 @@
+#:kivy 1.9.0
+
+<RecvFile@GridLayout>:
+    cols: 1
+    row: 7
+    AndCatLabel:
+        text: 'Receive File'
+    AndCatLabel:
+        text: 'Current IP: 192.0.0.1'
+    AndCatTextInput:
+        id: _recv_port
+        multiline: False
+        text: '31337'
+    AndCatLabel:
+        text: 'Filechooser placeholder'
+    AndCatBtn:
+        text: 'Receive'
+    AndCatBtn:
+        text: 'Main'
+        on_press: root.parent.manager.current = 'main'

@@ -1,0 +1,22 @@
+#:kivy 1.9.0
+
+<SendFile@GridLayout>:
+    cols: 1
+    rows: 6
+    AndCatLabel:
+        text: 'Send File'
+    AndCatTextInput:
+        id: _ip_addr
+        multiline: False
+        text: 'eg. 192.168.0.12'
+        on_focus: self.text = ''
+    AndCatTextInput:
+        id: _send_port
+        multiline: False
+    AndCatLabel:
+        text: 'FileChooser placeholder'
+    AndCatBtn:
+        text: 'Send'
+    AndCatBtn:
+        text: 'Main'
+        on_press: root.parent.manager.current = 'main'

@@ -1,0 +1,12 @@
+#:kivy 1.9.0
+
+<About@GridLayout>:
+    cols: 1
+    rows: 3
+    AndCatLabel:
+        text: 'AndCat - NetCat for Android\nV: {}'.format(root.parent.manager.version)
+    AndCatLabel:
+        text: 'About'
+    AndCatBtn:
+        text: 'Main'
+        on_press: root.parent.manager.current = 'main'
