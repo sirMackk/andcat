@@ -9,14 +9,17 @@
         id: _ip_addr
         multiline: False
         text: 'eg. 192.168.0.12'
-        on_focus: self.text = ''
+        #on_focus: self.text = ''
     AndCatTextInput:
         id: _send_port
         multiline: False
-    AndCatLabel:
-        text: 'FileChooser placeholder'
+    SendFileChooser:
+        id: _send_file_chooser
+        path: '/home/matt/'
+        on_submit: self.send_file(_ip_addr.text, _send_port.text)
     AndCatBtn:
         text: 'Send'
+        on_press: _send_file_chooser.send_file(_ip_addr.text, _send_port.text)
     AndCatBtn:
         text: 'Main'
         on_press: root.parent.manager.current = 'main'
