@@ -1,3 +1,5 @@
+from os import path
+
 from kivy import require
 require('1.9.0')
 
@@ -13,7 +15,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
 
-from netcat import Sender, SendingException
+from netcat import Sender, SendingException, Receiver, get_network_ip  
 
 kv_files = ('send_file', 'recv_file', 'http_server', 'about',)
 
@@ -31,6 +33,11 @@ class AndCatBtn(Button):
 
 class AndCatLabel(Label):
     pass
+
+
+class AndCatIPLabel(Label):
+    def get_own_ip(self):
+        return get_network_ip()
 
 
 class AndCatGrid(GridLayout):
@@ -54,9 +61,18 @@ class SendFileChooser(FileChooserListView):
         except SendingException as e:
             pass #popup!
 
+
 class RecvFileChooser(FileChooserListView):
     # implement using only directories
-    pass
+    def recv_file(self, src_port, fname):
+        dirpath = self.selection[0]
+        fpath = path.join(dirpath, fname)
+        receiver = Receiver(src_port)
+        try:
+            receiver.receiveFile(fpath)
+        except Exception as e:
+            print 'receiver exception'
+            print e
 
 
 class AndCatApp(App):

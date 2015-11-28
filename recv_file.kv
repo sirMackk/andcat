@@ -2,19 +2,26 @@
 
 <RecvFile@GridLayout>:
     cols: 1
-    row: 7
+    row: 8
     AndCatLabel:
         text: 'Receive File'
-    AndCatLabel:
-        text: 'Current IP: 192.0.0.1'
+    AndCatIPLabel:
+        text: 'Current IP: {0}'.format(self.get_own_ip())
     AndCatTextInput:
         id: _recv_port
         multiline: False
         text: '31337'
     RecvFileChooser:
+        dirselect: True
+        id: _recv_file_chooser
         path: '/home/matt'
+        on_submit: self.recv_file(_recv_port.text, _recv_filename.text)
+    AndCatTextInput:
+        id: _recv_filename
+        multiline: False
     AndCatBtn:
         text: 'Receive'
+        on_press: _recv_file_chooser.recv_file(_recv_port.text, _recv_filename.text)
     AndCatBtn:
         text: 'Main'
         on_press: root.parent.manager.current = 'main'
