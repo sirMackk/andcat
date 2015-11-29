@@ -22,12 +22,14 @@ def get_network_ip():
 class SendProducer(object):
     implements(interfaces.IPushProducer)
 
-    def __init__(self, transport, finput):
+    def __init__(self, transport, finput, popup=None):
         self._transport = transport
+        self._popup = popup
         self._finput = finput
         self._count = os.fstat(finput.fileno()).st_size
         self._produced = 0
         self._paused = False
+        self._popup.open()
 
     def pauseProducing(self):
         self._paused = True
@@ -36,6 +38,7 @@ class SendProducer(object):
         self._paused = False
 
         while not self._paused and self._produced < self._count:
+            self._popup.content.text = 'Sent: {0:.2f}%'.format((self._produced / float(self._count)) * 100)
             self._transport.write(self._finput.read(CHUNKSIZE))
             self._produced += CHUNKSIZE
 
@@ -44,6 +47,7 @@ class SendProducer(object):
             self._transport.loseConnection()
             # this should be in a 'finally' 
             self._finput.close()
+            self._popup.dismiss()
 
     def stopProducing(self):
         self._produced = self._count
@@ -101,11 +105,12 @@ class Sender(object):
     # make into context manager?
     # all this is done with call backs
     # how about switched to deferreds?
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, progress_popup=None):
         self.transport = None
         self.dest_ip = ip
         self.dest_port = int(port)
         self.filepath = None
+        self.popup = progress_popup
         self.send = defer.Deferred()
         self.send.addCallback(self.on_connection)
 
@@ -113,7 +118,7 @@ class Sender(object):
         self.transport = transport
 
         f = open(self.filepath, 'rb')
-        producer = SendProducer(transport, f)
+        producer = SendProducer(transport, f, self.popup)
         transport.registerProducer(producer, True)
         producer.resumeProducing()
 

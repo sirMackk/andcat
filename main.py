@@ -1,4 +1,5 @@
 from os import path
+import re
 
 from kivy import require
 require('1.9.0')
@@ -14,10 +15,14 @@ from kivy.uix.image import Image
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
+from kivy.uix.popup import Popup
 
 from netcat import Sender, SendingException, Receiver, get_network_ip
 
 kv_files = ('andcat', 'send_file', 'recv_file', 'http_server', 'about', )
+
+IPSUB = re.compile(r'[^0-9.]')
+PORTSUB = re.compile(r'[^0-9]')
 
 for kv_file in kv_files:
     Builder.load_file(kv_file + '.kv')
@@ -48,14 +53,30 @@ class AndCatTextInput(TextInput):
     pass
 
 
+class AndCatIPInput(AndCatTextInput):
+    def insert_text(self, substring, from_undo=False):
+        s = IPSUB.sub('', substring)
+        return super(AndCatIPInput, self).insert_text(s, from_undo=from_undo)
+
+    def validate(self, text_input):
+        print text_input
+
+
+class AndCatPortInput(AndCatTextInput):
+    def insert_text(self, substring, from_undo=False):
+        s = PORTSUB.sub('', substring)
+        return super(AndCatPortInput, self).insert_text(s, from_undo=from_undo)
+
+
+
 class SendFileChooser(FileChooserListView):
     # break out into own module
     def send_file(self, dest_ip, dest_port):
-        # this should create another object that encompasses sending logic (ie. reactor, protocol, etc)
-        print dest_ip
-        print dest_port
-        print self.selection[0]
-        sender = Sender(dest_ip, dest_port)
+        popup = Popup(
+            title='Sending...',
+            content=Label(text='Sending {0}, {1}'.format(dest_ip, dest_port)),
+            size_hint=(0.3, 0.3,))
+        sender = Sender(dest_ip, dest_port, popup)
         try:
             sender.sendFile(self.selection[0])
         except SendingException as e:
