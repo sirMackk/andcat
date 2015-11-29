@@ -2,6 +2,7 @@ import os.path
 import os
 from time import sleep
 import socket
+from datetime import datetime
 from zope.interface import implements
 
 from kivy.support import install_twisted_reactor
@@ -28,7 +29,9 @@ class SendProducer(object):
         self._finput = finput
         self._count = os.fstat(finput.fileno()).st_size
         self._produced = 0
+        self._started = datetime.now()
         self._paused = False
+
         self._popup.open()
 
     def pauseProducing(self):
@@ -38,7 +41,11 @@ class SendProducer(object):
         self._paused = False
 
         while not self._paused and self._produced < self._count:
-            self._popup.content.text = 'Sent: {0:.2f}%'.format((self._produced / float(self._count)) * 100)
+            percent_done = (self._produced / float(self._count)) * 100
+            avg_speed = (self._produced / (datetime.now() - self._started
+                                           ).total_seconds()) / 1024 / 1024
+            self._popup.content.text = 'Sent: {0:.2f}% - {1:.2f} MB/s'.format(
+                percent_done, avg_speed)
             self._transport.write(self._finput.read(CHUNKSIZE))
             self._produced += CHUNKSIZE
 
@@ -128,21 +135,26 @@ class Sender(object):
 
 
 class Receiver(object):
-    def __init__(self, port):
+    def __init__(self, port, popup=None):
         self.transport = None
         self.src_port = int(port)
         self.filepath = None
         self.listener = None
         self.created = False
+        self.popup = popup
         self.data = []
+        self.bytes_recved = 1.0
+        self.started = datetime.now()
 
         self.received = defer.Deferred()
         self.received.addCallback(self.transfer_done)
 
+        self.popup.open()
+
     def transfer_done(self, reason):
-        # dont work with big files
         print reason
         self.listener.stopListening()
+        self.popup.dismiss()
         print 'all done'
         # handle errors/bad connections
 
@@ -152,6 +164,12 @@ class Receiver(object):
         def data_writer(data):
             # if not os.path.exists(self.filepath) or self.created:
             with open(self.filepath, 'ab') as f:
+                self.bytes_recved += len(data)
+                megab = self.bytes_recved / 1024 / 1024
+                speed = megab / (datetime.now() - self.started
+                         ).total_seconds()
+                self.popup.content.text = '{0:.2f}MB - {1:.2f} MB/s'.format(megab,
+                                                                     speed)
                 f.write(data)
 
         self.listener = reactor.listenTCP(self.src_port, ReceiveFactory(data_writer, self.received))

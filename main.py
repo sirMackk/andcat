@@ -86,9 +86,14 @@ class SendFileChooser(FileChooserListView):
 class RecvFileChooser(FileChooserListView):
     # implement using only directories
     def recv_file(self, src_port, fname):
+        popup = Popup(
+            title='Receiving...',
+            content=Label(text='Sending {0}, {1}'.format(src_port, fname)),
+            size_hint=(0.3, 0.3,))
+
         dirpath = self.selection[0]
         fpath = path.join(dirpath, fname)
-        receiver = Receiver(src_port)
+        receiver = Receiver(src_port, popup)
         try:
             receiver.receiveFile(fpath)
         except Exception as e:
