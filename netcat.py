@@ -1,11 +1,13 @@
 import os.path
+import os
 from time import sleep
 import socket
+from zope.interface import implements
 
 from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
-from twisted.internet import protocol, reactor, defer
+from twisted.internet import protocol, reactor, defer, interfaces
 
 CHUNKSIZE = 1024
 
@@ -15,6 +17,36 @@ def get_network_ip():
     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     s.connect(('<broadcast>', 0))
     return s.getsockname()[0]
+
+
+class SendProducer(object):
+    implements(interfaces.IPushProducer)
+
+    def __init__(self, transport, finput):
+        self._transport = transport
+        self._finput = finput
+        self._count = os.fstat(finput.fileno()).st_size
+        self._produced = 0
+        self._paused = False
+
+    def pauseProducing(self):
+        self._paused = True
+
+    def resumeProducing(self):
+        self._paused = False
+
+        while not self._paused and self._produced < self._count:
+            self._transport.write(self._finput.read(CHUNKSIZE))
+            self._produced += CHUNKSIZE
+
+        if self._produced >= self._count:
+            self._transport.unregisterProducer()
+            self._transport.loseConnection()
+            # this should be in a 'finally' 
+            self._finput.close()
+
+    def stopProducing(self):
+        self._produced = self._count
 
 
 class SendingException(Exception):
@@ -80,20 +112,10 @@ class Sender(object):
     def on_connection(self, transport):
         self.transport = transport
 
-        # pull out method
-        if os.path.exists(self.filepath) and os.path.isfile(self.filepath):
-            with open(self.filepath, 'rb') as f:
-                while True:
-                    chunk = f.read(CHUNKSIZE)
-                    if chunk:
-                        self.transport.write(chunk)
-                    else:
-                        break
-        else:
-            raise SendingException(
-                'File does not exist at {}'.format(self.filepath))
-
-        self.transport.loseConnection()
+        f = open(self.filepath, 'rb')
+        producer = SendProducer(transport, f)
+        transport.registerProducer(producer, True)
+        producer.resumeProducing()
 
     def sendFile(self, filepath):
         self.filepath = filepath

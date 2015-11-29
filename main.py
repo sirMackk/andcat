@@ -15,9 +15,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
 
-from netcat import Sender, SendingException, Receiver, get_network_ip  
+from netcat import Sender, SendingException, Receiver, get_network_ip
 
-kv_files = ('send_file', 'recv_file', 'http_server', 'about',)
+kv_files = ('andcat', 'send_file', 'recv_file', 'http_server', 'about', )
 
 for kv_file in kv_files:
     Builder.load_file(kv_file + '.kv')
