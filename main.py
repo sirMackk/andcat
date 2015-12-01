@@ -1,5 +1,6 @@
 from os import path
 import re
+from datetime import datetime
 
 from kivy import require
 require('1.9.0')
@@ -58,9 +59,6 @@ class AndCatIPInput(AndCatTextInput):
         s = IPSUB.sub('', substring)
         return super(AndCatIPInput, self).insert_text(s, from_undo=from_undo)
 
-    def validate(self, text_input):
-        print text_input
-
 
 class AndCatPortInput(AndCatTextInput):
     def insert_text(self, substring, from_undo=False):
@@ -68,15 +66,38 @@ class AndCatPortInput(AndCatTextInput):
         return super(AndCatPortInput, self).insert_text(s, from_undo=from_undo)
 
 
+class ProgressPopup(Popup):
+    def __init__(self, **kwargs):
+        self._started = None
+        super(self.__class__, self).__init__(**kwargs)
+
+    def update(self, transferred, total=None):
+        mb_transferred = transferred / 1024 / 1024
+        unit = 'MB'
+        if total:
+            progressed = (transferred / float(total)) * 100
+            unit = '%'
+        else:
+            progressed = mb_transferred
+
+        if not self._started:
+            self._started = datetime.now()
+
+        avg_speed = mb_transferred / (datetime.now() - self._started
+                                      ).total_seconds()
+
+        self.content.text = 'Transferred: {0:.2}{1}. Avg Speed: {2:.2f}'.format(
+            progressed, unit, avg_speed)
+
 
 class SendFileChooser(FileChooserListView):
     # break out into own module
     def send_file(self, dest_ip, dest_port):
-        popup = Popup(
+        progress_popup = ProgressPopup(
             title='Sending...',
-            content=Label(text='Sending {0}, {1}'.format(dest_ip, dest_port)),
-            size_hint=(0.3, 0.3,))
-        sender = Sender(dest_ip, dest_port, popup)
+            content='Preparing to send',
+            size_hint=(0.3, 0.3))
+        sender = Sender(dest_ip, dest_port, progress_popup)
         try:
             sender.sendFile(self.selection[0])
         except SendingException as e:
