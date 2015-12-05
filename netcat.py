@@ -26,30 +26,27 @@ def get_network_ip():
 class SendProto(protocol.Protocol):
     def connectionMade(self):
         print 'connectionMade!'
-        self.factory.sender.callback(self.transport)
+        self.factory.on_connection(self.transport)
 
 
 class SendFactory(protocol.ClientFactory):
     protocol = SendProto
 
-    def __init__(self, sender):
-        self.sender = sender
+    def __init__(self, on_connection, on_termination):
+        self.on_connection = on_connection
+        self.on_termination = on_termination
 
     def clientConnectionLost(self, conn, reason):
+        self.on_termination(reason)
         print 'lost'
-        # reactor.stop()
 
     def clientConnectionFailed(self, conn, failure):
+        self.on_termination(failure)
         print 'failed'
-        pass
-        # reactor.stop()
 
 
 class Sender(object):
     implements(interfaces.IPushProducer)
-    # open file
-    # send file w/ rate limiting (producer)
-    # update progress widget
 
     def __init__(self, ip, port, progress_popup=None):
         self.dest_ip = ip
@@ -61,22 +58,38 @@ class Sender(object):
 
         self._progress = progress_popup
 
-        self.send = defer.Deferred()
-        self.send.addCallback(self.on_connection)
+    def _onTermination(self, reason):
+        # discern lost from failed
+        print reason
+        print dir(reason)
+        self._finput.close()
 
-    def on_connection(self, transport):
-        self.transport = transport
-        self.transport.registerProducer(self, True)
+        # all these ugly if statements
+        if self._progress:
+            self._progress.show_msg('failed or terminated (success?)')
+            self._progress.show_exit()
+
+    def _onConnection(self, transport):
+        self._transport = transport
+        self._transport.registerProducer(self, True)
         self.resumeProducing()
 
-    def sendFile(self, filepath):
-        self._progress.open()
-
-        # try catch or move to _init_ or own func
+    def prepareFileForSending(self, filepath):
         self._finput = open(filepath, 'rb')
         self._count = os.fstat(self._finput.fileno()).st_size
 
-        reactor.connectTCP(self.dest_ip, self.dest_port, SendFactory(self.send))
+    def sendFile(self, filepath):
+        if self._progress:
+            self._progress.open()
+            self._progress.set_cancel(self.terminateProduction)
+        try:
+            self.prepareFileForSending(filepath)
+        except IOError:
+            self._produced.show_msg('Cannot open file', title='Error')
+
+        reactor.connectTCP(
+            self.dest_ip, self.dest_port,
+            SendFactory(self._onConnection, self._onTermination))
 
     def pauseProducing(self):
         self._paused = True
@@ -85,19 +98,20 @@ class Sender(object):
         self._paused = False
 
         while not self._paused and self._produced < self._count:
-            self._progress.update(self._produced, self._count)
+            if self._progress:
+                self._progress.update_msg(self._produced, self._count)
             self._transport.write(self._finput.read(CHUNKSIZE))
             self._produced += CHUNKSIZE
 
         if self._produced >= self._count:
-            self._transport.unregisterProducer()
-            self._transport.loseConnection()
-            # this should be in a 'finally' or deferred?
-            self._finput.close()
-            self._progress.dismiss()
+            self.terminateProduction()
 
     def stopProducing(self):
         self._produced = self._count
+
+    def terminateProduction(self, instance=None):
+        self._transport.unregisterProducer()
+        self._transport.loseConnection()
 
 
 class ReceiveProto(protocol.Protocol):
@@ -108,7 +122,6 @@ class ReceiveProto(protocol.Protocol):
         print 'losing connection'
         print self.factory.received
         print reason
-        # self.factory.received.callback(reason)
         self.factory.received.callback('no reason')
 
 
@@ -151,7 +164,7 @@ class Receiver(object):
             # if not os.path.exists(self.filepath) or self.created:
             with open(self.filepath, 'ab') as f:
                 self.bytes_recved += len(data)
-                self._progress.update(self.bytes_recved)
+                self._progress.update_msg(self.bytes_recved)
                 f.write(data)
 
         self.listener = reactor.listenTCP(self.src_port, ReceiveFactory(data_writer, self.received))
