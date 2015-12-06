@@ -11,8 +11,8 @@ class RecvFileChooser(FileChooserListView):
     def recv_file(self, src_port, fname):
         popup = ProgressPopup(
             title='Receiving...',
-            content='Sending {0}, {1}'.format(src_port, fname),
-            size_hint=(0.3, 0.3,))
+            content='Receiving {0}, {1}'.format(src_port, fname),
+            size_hint=(0.5, 0.3,))
 
         dirpath = self.selection[0]
         fpath = path.join(dirpath, fname)
@@ -25,7 +25,6 @@ class RecvFileChooser(FileChooserListView):
 
 
 class SendFileChooser(FileChooserListView):
-    # break out into own module
     def send_file(self, dest_ip, dest_port):
         progress_popup = ProgressPopup(
             title='Sending...',

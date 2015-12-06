@@ -1,7 +1,6 @@
 import os.path
 import os
 import socket
-from datetime import datetime
 from zope.interface import implements
 
 from kivy.support import install_twisted_reactor
@@ -116,55 +115,50 @@ class Sender(object):
 
 class ReceiveProto(protocol.Protocol):
     def dataReceived(self, data):
-        self.factory.data_writer(data)
+        self.factory.dataWriter(data)
 
     def connectionLost(self, reason):
         print 'losing connection'
-        print self.factory.received
         print reason
-        self.factory.received.callback('no reason')
+        self.factory.onDone('no reason')
 
 
 class ReceiveFactory(protocol.Factory):
     protocol = ReceiveProto
 
-    def __init__(self, data_writer, received):
+    def __init__(self, dataWriter, onDone):
         print 'ready to recv'
-        self.data_writer = data_writer
-        self.received = received
+        self.dataWriter = dataWriter
+        self.onDone = onDone
 
 
 class Receiver(object):
     def __init__(self, port, progress=None):
-        self.transport = None
-        self.src_port = int(port)
+        self.srcPort = int(port)
         self.filepath = None
-        self.listener = None
-        self.created = False
+        self.receiver = None
         self._progress = progress
-        self.data = []
-        self.bytes_recved = 1.0
+        self.bytes_received = 1.0
 
-        self.received = defer.Deferred()
-        self.received.addCallback(self.transfer_done)
-
-        self._progress.open()
-
-    def transfer_done(self, reason):
+    def transferFinished(self, reason):
+        if self._progress:
+            self._progress.show_msg('Transfer finished')
+            self._progress.show_exit()
         print reason
-        self.listener.stopListening()
-        self._progress.dismiss()
+        self.receiver.stopListening()
         print 'all done'
-        # handle errors/bad connections
 
     def receiveFile(self, filepath):
         self.filepath = filepath
+        if self._progress:
+            self._progress.open()
 
-        def data_writer(data):
-            # if not os.path.exists(self.filepath) or self.created:
+        def dataWriter(data):
             with open(self.filepath, 'ab') as f:
-                self.bytes_recved += len(data)
-                self._progress.update_msg(self.bytes_recved)
+                self.bytes_received += len(data)
+                if self._progress:
+                    self._progress.update_msg(self.bytes_received)
                 f.write(data)
 
-        self.listener = reactor.listenTCP(self.src_port, ReceiveFactory(data_writer, self.received))
+        self.receiver = reactor.listenTCP(self.srcPort, ReceiveFactory(
+            dataWriter, self.transferFinished))
