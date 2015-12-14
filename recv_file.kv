@@ -7,7 +7,7 @@
         text: 'Receive File'
     AndCatIPLabel:
         text: 'Current IP: {0}'.format(self.get_own_ip())
-    AndCatTextInput:
+    AndCatPortInput:
         id: _recv_port
         multiline: False
         text: '31337'
@@ -19,6 +19,7 @@
     AndCatTextInput:
         id: _recv_filename
         multiline: False
+        text: 'Filename to save as'
     AndCatBtn:
         text: 'Receive'
         on_press: _recv_file_chooser.recv_file(_recv_port.text, _recv_filename.text)

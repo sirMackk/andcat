@@ -8,7 +8,19 @@ PORTSUB = re.compile(r'[^0-9]')
 
 
 class AndCatTextInput(TextInput):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.edited = False
+        super(AndCatTextInput, self).__init__(*args, **kwargs)
+
+    def on_focus(self, instance, value):
+        if value and not self.edited:
+            self.edited = True
+            self.placeholder = self.text
+            self.text = ''
+        elif value and self.text == self.placeholder:
+            self.text = ''
+        elif not value and self.text == '':
+            self.text = self.placeholder
 
 
 class AndCatIPInput(AndCatTextInput):
