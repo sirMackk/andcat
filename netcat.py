@@ -1,6 +1,7 @@
 import os.path
 import os
 import socket
+import re
 from zope.interface import implements
 
 from kivy.support import install_twisted_reactor
@@ -9,10 +10,44 @@ install_twisted_reactor()
 from twisted.internet import protocol, reactor, defer, interfaces
 
 CHUNKSIZE = 1024
+IP_VALIDATOR = re.compile(
+                (r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25'
+                 '[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4]'
+                 '[0-9]|25[0-5])$'))
 
 
 class SendingException(Exception):
     pass
+
+
+class ValidationError(Exception):
+    pass
+
+
+def validate_ip(ip):
+    """
+    Uses regex to validate ip address. Raises ValidationError.
+    :ip: string representing a valid IP address.
+    :return: None
+    """
+    if not IP_VALIDATOR.match(ip):
+        raise ValidationError('Please provide a valid IP address')
+
+
+def validate_port(port):
+    """
+    Validates if a port is between 1024 and 65535. Raises Validation Error.
+    :port: String or int representing a port.
+    :return: None
+    """
+    try:
+        port = int(port)
+    except ValueError:
+        raise ValidationError('A port can only be composed of numbers')
+
+    if port < 1024 or port > 65535:
+        raise ValidationError('Must specify a port between 1024 and 65535')
+    
 
 
 def get_network_ip():
@@ -24,7 +59,6 @@ def get_network_ip():
 
 class SendProto(protocol.Protocol):
     def connectionMade(self):
-        print 'connectionMade!'
         self.factory.on_connection(self.transport)
 
 
@@ -48,6 +82,9 @@ class Sender(object):
     implements(interfaces.IPushProducer)
 
     def __init__(self, ip, port, progress_popup=None):
+        validate_ip(ip)
+        validate_port(port)
+
         self.dest_ip = ip
         self.dest_port = int(port)
 
@@ -58,6 +95,7 @@ class Sender(object):
         self._progress = progress_popup
 
     def _onTermination(self, reason):
+        # class 'twisted.internet.error.ConnectionDone'
         # discern lost from failed
         print reason
         print dir(reason)
@@ -79,12 +117,11 @@ class Sender(object):
 
     def sendFile(self, filepath):
         if self._progress:
-            self._progress.open()
             self._progress.set_cancel(self.terminateProduction)
         try:
             self.prepareFileForSending(filepath)
         except IOError:
-            self._produced.show_msg('Cannot open file', title='Error')
+            self._produced.show_err('Cannot open file')
 
         reactor.connectTCP(
             self.dest_ip, self.dest_port,
@@ -134,6 +171,8 @@ class ReceiveFactory(protocol.Factory):
 
 class Receiver(object):
     def __init__(self, port, progress=None):
+        validate_port(port)
+        # validate directory, filename
         self.srcPort = int(port)
         self.filepath = None
         self.receiver = None
@@ -150,8 +189,6 @@ class Receiver(object):
 
     def receiveFile(self, filepath):
         self.filepath = filepath
-        if self._progress:
-            self._progress.open()
 
         def dataWriter(data):
             with open(self.filepath, 'ab') as f:

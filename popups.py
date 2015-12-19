@@ -36,9 +36,19 @@ class ProgressPopup(Popup):
         self.content.add_widget(self.exit)
 
     def show_msg(self, msg, title=None):
-        self.content.text = msg
+        self.display_msg(str(msg))
         if title:
             self.title = title
+
+    def show_err(self, msg):
+        self.title = 'Error'
+        self.display_msg(str(msg))
+        self.show_exit()
+
+    def display_msg(self, msg):
+        for child in self.content.children:
+            if child.id == 'popup_content':
+                child.text = msg
 
     def update_msg(self, transferred, total=None):
         mb_transferred = transferred / 1024 / 1024
@@ -55,8 +65,6 @@ class ProgressPopup(Popup):
         avg_speed = mb_transferred / (datetime.now() - self._started
                                       ).total_seconds()
 
-        for child in self.content.children:
-            if child.id == 'popup_content':
-                child.text = ('Transferred: {0:.2f}{1}. '
-                              'Avg Speed: {2:.2f}MB/s').format(
-                    progressed, unit, avg_speed)
+        self.display_msg(('Transferred: {0:.2f}{1}. '
+                         'Avg Speed: {2:.2f}MB/s').format(
+                            progressed, unit, avg_speed))
