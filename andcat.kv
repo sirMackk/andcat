@@ -10,7 +10,7 @@
         AndCatGrid:
             id: _main_screen
             cols: 1
-            rows: 5
+            rows: 4
             AndCatLabel:
                 text: 'AndCat'
                 size_hint: 1, None
@@ -22,9 +22,6 @@
                 text: 'Receive File'
                 on_press: root.current = 'recv_file'
             AndCatBtn:
-                text: 'HTTP Server'
-                on_press: root.current = 'http_server'
-            AndCatBtn:
                 text: 'About'
                 on_press: root.current = 'about'
     Screen:
@@ -33,9 +30,6 @@
     Screen:
         name: 'recv_file'
         RecvFile:
-    Screen:
-        name: 'http_server'
-        HTTPServer:
     Screen:
         name: 'about'
         About:

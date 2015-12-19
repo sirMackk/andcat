@@ -1,4 +1,5 @@
 import re
+# where does validation happen? on de_focus? or on submit? I'd say on de_focus and that must somehow block _submit_
 
 from kivy.uix.textinput import TextInput
 

@@ -13,7 +13,7 @@ from kivy.uix.gridlayout import GridLayout
 from netcat import get_network_ip
 
 
-kv_files = ('andcat', 'send_file', 'recv_file', 'http_server', 'about', )
+kv_files = ('andcat', 'send_file', 'recv_file', 'about', )
 
 
 for kv_file in kv_files:
