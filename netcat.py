@@ -152,16 +152,18 @@ class ReceiveProto(protocol.Protocol):
         self.factory.dataWriter(data)
 
     def connectionLost(self, reason):
-        print 'losing connection'
-        print reason
-        self.factory.onDone('no reason')
+        if reason.check(error.ConnectionDone):
+            msg = 'Transfer finished sucessfully!'
+        else:
+            msg = 'Error while receiving file: {}'.format(reason.value)
+
+        self.factory.onDone(msg)
 
 
 class ReceiveFactory(protocol.Factory):
     protocol = ReceiveProto
 
     def __init__(self, dataWriter, onDone):
-        print 'ready to recv'
         self.dataWriter = dataWriter
         self.onDone = onDone
 
@@ -176,13 +178,11 @@ class Receiver(object):
         self._progress = progress
         self.bytes_received = 1.0
 
-    def transferFinished(self, reason):
+    def transferFinished(self, msg):
         if self._progress:
-            self._progress.show_msg('Transfer finished')
+            self._progress.show_msg(msg)
             self._progress.show_exit()
-        print reason
         self.receiver.stopListening()
-        print 'all done'
 
     def receiveFile(self, filepath):
         self.filepath = filepath

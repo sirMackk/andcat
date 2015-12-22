@@ -65,6 +65,6 @@ class ProgressPopup(Popup):
         avg_speed = mb_transferred / (datetime.now() - self._started
                                       ).total_seconds()
 
-        self.display_msg(('Transferred: {0:.2f}{1}. '
-                         'Avg Speed: {2:.2f}MB/s').format(
+        self.display_msg(("Transferred: {0:.2f}{1}.\n "
+                          "Avg Speed: {2:.2f}MB/s").format(
                             progressed, unit, avg_speed))

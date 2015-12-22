@@ -7,12 +7,11 @@ from netcat import Sender, Receiver, SendingException, ValidationError
 
 
 class RecvFileChooser(FileChooserListView):
-    # implement using only directories
     def recv_file(self, src_port, fname):
         popup = ProgressPopup(
             title='Receiving...',
-            content='Receiving {0}, {1}'.format(src_port, fname),
-            size_hint=(0.5, 0.3,))
+            content="Receiving {0}\n {1}".format(src_port, fname),
+            size_hint=(1.0, 0.4,))
         popup.open()
 
         dirpath = self.selection[0]
@@ -25,8 +24,7 @@ class RecvFileChooser(FileChooserListView):
         try:
             receiver.receiveFile(fpath)
         except Exception as e:
-            print 'receiver exception'
-            print e
+            popup.show_err(e)
 
 
 class SendFileChooser(FileChooserListView):
@@ -34,7 +32,7 @@ class SendFileChooser(FileChooserListView):
         progress_popup = ProgressPopup(
             title='Sending...',
             content='Preparing to send',
-            size_hint=(0.5, 0.3))
+            size_hint=(1.0, 0.4))
         progress_popup.open()
 
         try:
