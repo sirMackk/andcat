@@ -7,7 +7,7 @@ from zope.interface import implements
 from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
-from twisted.internet import protocol, reactor, defer, interfaces
+from twisted.internet import protocol, reactor, defer, interfaces, error
 
 CHUNKSIZE = 1024
 IP_VALIDATOR = re.compile(
@@ -71,11 +71,9 @@ class SendFactory(protocol.ClientFactory):
 
     def clientConnectionLost(self, conn, reason):
         self.on_termination(reason)
-        print 'lost'
 
     def clientConnectionFailed(self, conn, failure):
         self.on_termination(failure)
-        print 'failed'
 
 
 class Sender(object):
@@ -95,15 +93,14 @@ class Sender(object):
         self._progress = progress_popup
 
     def _onTermination(self, reason):
-        # class 'twisted.internet.error.ConnectionDone'
-        # discern lost from failed
-        print reason
-        print dir(reason)
         self._finput.close()
 
-        # all these ugly if statements
         if self._progress:
-            self._progress.show_msg('failed or terminated (success?)')
+            if reason.check(error.ConnectionDone):
+                msg = "Transfer finished!"
+            else:
+                msg = "Possible problem with the transfer".format(reason.value)
+            self._progress.show_msg(msg)
             self._progress.show_exit()
 
     def _onConnection(self, transport):

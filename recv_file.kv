@@ -10,16 +10,18 @@
     AndCatPortInput:
         id: _recv_port
         multiline: False
-        text: 'A value between 1024 and 65535'
+        text: 'Port number. A value between 1024 and 65535'
     RecvFileChooser:
         dirselect: True
         id: _recv_file_chooser
         path: '/home/matt'
+        filters: [lambda folder, fname: False]
+        filters_dirs: False
         on_submit: self.recv_file(_recv_port.text, _recv_filename.text)
     AndCatTextInput:
         id: _recv_filename
         multiline: False
-        text: 'Filename to save as'
+        text: 'Save as...'
     AndCatBtn:
         text: 'Receive'
         on_press: _recv_file_chooser.recv_file(_recv_port.text, _recv_filename.text)
