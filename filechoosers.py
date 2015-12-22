@@ -14,7 +14,11 @@ class RecvFileChooser(FileChooserListView):
             size_hint=(1.0, 0.4,))
         popup.open()
 
-        dirpath = self.selection[0]
+        try:
+            dirpath = self.selection[0]
+        except IndexError as e:
+            popup.show_err('Please select a directory first')
+            return
         fpath = path.join(dirpath, fname)
         try:
             receiver = Receiver(src_port, popup)
