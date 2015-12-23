@@ -11,6 +11,7 @@ PORTSUB = re.compile(r'[^0-9]')
 class AndCatTextInput(TextInput):
     def __init__(self, *args, **kwargs):
         self.edited = False
+        self.font_size = '20sp'
         super(AndCatTextInput, self).__init__(*args, **kwargs)
 
     def on_focus(self, instance, value):

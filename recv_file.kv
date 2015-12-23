@@ -3,14 +3,20 @@
 <RecvFile@GridLayout>:
     cols: 1
     row: 8
-    AndCatLabel:
-        text: 'Receive File'
+    AndCatLogo:
     AndCatIPLabel:
         text: 'Current IP: {0}'.format(self.get_own_ip())
+        size_hint: 1, 0.1
     AndCatPortInput:
         id: _recv_port
         multiline: False
-        text: 'Port number. A value between 1024 and 65535'
+        text: 'Port (value between 1024 and 65535)'
+        size_hint: 1, 0.1
+    AndCatTextInput:
+        id: _recv_filename
+        multiline: False
+        text: 'Save as...'
+        size_hint: 1, 0.1
     RecvFileChooser:
         dirselect: True
         id: _recv_file_chooser
@@ -18,13 +24,16 @@
         filters: [lambda folder, fname: False]
         filters_dirs: False
         on_submit: self.recv_file(_recv_port.text, _recv_filename.text)
-    AndCatTextInput:
-        id: _recv_filename
-        multiline: False
-        text: 'Save as...'
-    AndCatBtn:
-        text: 'Receive'
-        on_press: _recv_file_chooser.recv_file(_recv_port.text, _recv_filename.text)
-    AndCatBtn:
-        text: 'Main'
-        on_press: root.parent.manager.current = 'main'
+        size_hint: 1, 0.5
+    GridLayout:
+        size_hint: 1, 0.1
+        cols: 2
+        rows: 1
+        AndCatBtn:
+            text: 'Receive'
+            on_press: _recv_file_chooser.recv_file(_recv_port.text, _recv_filename.text)
+            size_hint: 1, 0.1
+        AndCatBtn:
+            text: 'Main'
+            on_press: root.parent.manager.current = 'main'
+            size_hint: 1, 0.1

@@ -47,7 +47,6 @@ def validate_port(port):
 
     if port < 1024 or port > 65535:
         raise ValidationError('Must specify a port between 1024 and 65535')
-    
 
 
 def get_network_ip():
@@ -171,7 +170,6 @@ class ReceiveFactory(protocol.Factory):
 class Receiver(object):
     def __init__(self, port, progress=None):
         validate_port(port)
-        # validate directory, filename
         self.srcPort = int(port)
         self.filepath = None
         self.receiver = None

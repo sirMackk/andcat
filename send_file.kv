@@ -3,23 +3,29 @@
 <SendFile@GridLayout>:
     cols: 1
     rows: 6
-    AndCatLabel:
-        text: 'Send File'
+    AndCatLogo:
     AndCatIPInput:
         id: _ip_addr
         multiline: False
         text: 'eg. 192.168.0.12'
+        size_hint: 1, 0.1
     AndCatPortInput:
         id: _send_port
         multiline: False
         text: 'A value between 1024 and 65535'
+        size_hint: 1, 0.1
     SendFileChooser:
         id: _send_file_chooser
         path: '/storage/emulated/0'
         on_submit: self.send_file(_ip_addr.text, _send_port.text)
-    AndCatBtn:
-        text: 'Send'
-        on_press: _send_file_chooser.send_file(_ip_addr.text, _send_port.text)
-    AndCatBtn:
-        text: 'Main'
-        on_press: root.parent.manager.current = 'main'
+        size_hint: 1, 0.5
+    GridLayout:
+        size_hint: 1, 0.1
+        rows: 1
+        cols: 2
+        AndCatBtn:
+            text: 'Send'
+            on_press: _send_file_chooser.send_file(_ip_addr.text, _send_port.text)
+        AndCatBtn:
+            text: 'Main'
+            on_press: root.parent.manager.current = 'main'

@@ -2,7 +2,7 @@
 #:import SendFileChoser filechoosers.SendFileChooser
 #:import RecvFileChooser filechoosers.RecvFileChooser
 #:import AndCatIPInput inputs.AndCatIPInput
-#:import AdnCatPortInput inputs.AndCatPortInput
+#:import AndCatPortInput inputs.AndCatPortInput
 
 <ScreenMan>:
     Screen:
@@ -11,10 +11,7 @@
             id: _main_screen
             cols: 1
             rows: 4
-            AndCatLabel:
-                text: 'AndCat'
-                size_hint: 1, None
-                height: 50
+            AndCatLogo:
             AndCatBtn:
                 text: 'Send File'
                 on_press: root.current = 'send_file'
