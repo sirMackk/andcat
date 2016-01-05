@@ -3,11 +3,17 @@
 <About@GridLayout>:
     cols: 1
     rows: 3
-    AndCatLabel:
-        text: 'AndCat - NetCat for Android\nV: {}'.format(root.parent.manager.version)
-    AndCatLabel:
-        text: 'About'
+    Image:
+        source: 'logo.png'
+        size_hint_y: 0.3
+    ScrollView:
+        size_hint: 1, 0.3
+        AndCatLabel:
+            text: root.parent.manager.about.format(version=root.parent.manager.version)
+            text_size: self.width, None
+            size_hint_y: None
+            height: self.texture_size[1]
     AndCatBtn:
-        size_hint: 1, 0.1
-        text: 'Main'
+        size_hint: 1, 0.2
+        text: 'Main Menu'
         on_press: root.parent.manager.current = 'main'

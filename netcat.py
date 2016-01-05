@@ -2,12 +2,15 @@ import os.path
 import os
 import socket
 import re
+import fcntl
+import struct
 from zope.interface import implements
 
 from kivy.support import install_twisted_reactor
 install_twisted_reactor()
 
-from twisted.internet import protocol, reactor, defer, interfaces, error
+from twisted.internet import protocol, reactor, interfaces, error
+
 
 CHUNKSIZE = 1024
 IP_VALIDATOR = re.compile(
@@ -50,10 +53,16 @@ def validate_port(port):
 
 
 def get_network_ip():
+    # http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    s.connect(('<broadcast>', 0))
-    return s.getsockname()[0]
+    try:
+        return socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', 'wlan0')
+        )[20:24])
+    except IOError:
+        return 'Could not get WiFi IP address. Turn on WiFi and restart the app, please.'
 
 
 class SendProto(protocol.Protocol):
