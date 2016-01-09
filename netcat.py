@@ -62,7 +62,8 @@ def get_network_ip():
             struct.pack('256s', 'wlan0')
         )[20:24])
     except IOError:
-        return 'Could not get WiFi IP address. Turn on WiFi and restart the app, please.'
+        return ('Could not get WiFi IP address. Turn on WiFi'
+                'and restart the app, please.')
 
 
 class SendProto(protocol.Protocol):

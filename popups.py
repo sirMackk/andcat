@@ -6,13 +6,12 @@ from kivy.uix.popup import Popup
 from kivy.uix.gridlayout import GridLayout
 
 
-class ProgressPopup(Popup):
+class GenericPopup(Popup):
     def __init__(self, *args, **kwargs):
-        self._started = None
         self.auto_dismiss = False
         kwargs['content'], content = None, kwargs['content']
         kwargs['content'] = self.setup_contents(content)
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(GenericPopup, self).__init__(*args, **kwargs)
 
     def setup_contents(self, msg):
         content = GridLayout(cols=1, rows=2)
@@ -49,6 +48,12 @@ class ProgressPopup(Popup):
         for child in self.content.children:
             if child.id == 'popup_content':
                 child.text = msg
+
+
+class ProgressPopup(GenericPopup):
+    def __init__(self, *args, **kwargs):
+        self._started = None
+        super(ProgressPopup, self).__init__(*args, **kwargs)
 
     def update_msg(self, transferred, total=None):
         mb_transferred = transferred / 1024 / 1024
