@@ -54,6 +54,9 @@ def validate_port(port):
 
 def get_network_ip():
     # http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
+    """
+    Obtains the ipv4 address of the wlan0 interface.
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         return socket.inet_ntoa(fcntl.ioctl(

@@ -1,6 +1,8 @@
 # AndCat
 
-AndCat is an Android application written in [Python](https://www.python.org/) that uses the [Kivy](https://www.python.org/) framework. 
+![AndCat - Logo](http://mattscodecave.com/media/andcatlogo.png)
+
+AndCat is an Android application written in [Python](https://www.python.org/) that uses the [Kivy](https://www.python.org/) framework. It's pretty prototypical.
 
 You can do two things with AndCat: send TCP streams and receive TCP streams. This mean you can send files between any other device that's running AndCat, [netcat](https://en.wikipedia.org/wiki/Netcat), or any device that can use TCP sockets.
 
@@ -29,5 +31,5 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
 
-##### Graphics Credits
+##### Graphics Credits - Logo
 Iconka - https://www.iconfinder.com/icons/182515/cat_tied_yarn_icon

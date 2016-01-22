@@ -1,7 +1,7 @@
 from kivy import require
 require('1.9.0')
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 from kivy.lang import Builder
 from kivy.app import App
@@ -31,9 +31,8 @@ You should have received a copy of the GNU General Public License along with thi
 kv_files = ('andcat', 'send_file', 'recv_file', 'about',)
 
 
-
 for kv_file in kv_files:
-    Builder.load_file(kv_file + '.kv')
+    Builder.load_file('kv_files/' + kv_file + '.kv')
 
 
 class ScreenMan(ScreenManager):
